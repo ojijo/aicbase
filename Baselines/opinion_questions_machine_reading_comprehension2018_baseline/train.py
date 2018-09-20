@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import argparse
-import cPickle
+# import cPickle
+import _pickle as cPickle
 import torch
 
 from model import MwAN
@@ -14,7 +15,7 @@ parser.add_argument('--data', type=str, default='data/',
                     help='location directory of the data corpus')
 parser.add_argument('--threshold', type=int, default=5,
                     help='threshold count of the word')
-parser.add_argument('--epoch', type=int, default=50,
+parser.add_argument('--epoch', type=int, default=3,
                     help='training epochs')
 parser.add_argument('--emsize', type=int, default=128,
                     help='size of word embeddings')
@@ -38,6 +39,7 @@ vocab_size = 98745
 
 model = MwAN(vocab_size=vocab_size, embedding_size=args.emsize, encoder_size=args.nhid, drop_out=args.dropout)
 print('Model total parameters:', get_model_parameters(model))
+print(model)
 if args.cuda:
     model.cuda()
 optimizer = torch.optim.Adamax(model.parameters())
@@ -71,9 +73,9 @@ def train(epoch):
         total_loss += loss.item()
         optimizer.step()
         if (num + 1) % args.log_interval == 0:
-            print '|------epoch {:d} train error is {:f}  eclipse {:.2f}%------|'.format(epoch,
+            print( '|------epoch {:d} train error is {:f}  eclipse {:.2f}%------|'.format(epoch,
                                                                                          total_loss / args.log_interval,
-                                                                                         i * 100.0 / len(data))
+                                                                                         i * 100.0 / len(data)))
             total_loss = 0
 
 
@@ -100,13 +102,14 @@ def test():
 def main():
     best = 0.0
     for epoch in range(args.epoch):
+        print("start epoch " + str(epoch))
         train(epoch)
         acc = test()
         if acc > best:
             best = acc
             with open(args.save, 'wb') as f:
                 torch.save(model, f)
-        print 'epcoh {:d} dev acc is {:f}, best dev acc {:f}'.format(epoch, acc, best)
+        print( 'epcoh {:d} dev acc is {:f}, best dev acc {:f}'.format(epoch, acc, best))
 
 
 if __name__ == '__main__':

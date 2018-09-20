@@ -13,7 +13,7 @@ class MwAN(nn.Module):
                                 bidirectional=True)
         self.p_encoder = nn.GRU(input_size=embedding_size, hidden_size=encoder_size, batch_first=True,
                                 bidirectional=True)
-        self.a_encoder = nn.GRU(input_size=embedding_size, hidden_size=embedding_size / 2, batch_first=True,
+        self.a_encoder = nn.GRU(input_size=embedding_size, hidden_size=int(embedding_size / 2), batch_first=True,
                                 bidirectional=True)
         self.a_attention = nn.Linear(embedding_size, 1, bias=False)
         # Concat Attention

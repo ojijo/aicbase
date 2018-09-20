@@ -40,7 +40,7 @@ raw_data = seg_data(args.data)
 transformed_data = transform_data_to_id(raw_data, word2id)
 data = [x + [y[2]] for x, y in zip(transformed_data, raw_data)]
 data = sorted(data, key=lambda x: len(x[1]))
-print 'test data size {:d}'.format(len(data))
+print( 'test data size {:d}'.format(len(data)))
 
 
 def inference():
@@ -66,7 +66,7 @@ def inference():
     outputs = u'\n'.join(predictions)
     with codecs.open(args.output, 'w',encoding='utf-8') as f:
         f.write(outputs)
-    print 'done!'
+    print( 'done!')
 
 
 if __name__ == '__main__':
