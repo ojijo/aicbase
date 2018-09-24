@@ -15,7 +15,7 @@ parser.add_argument('--data', type=str, default='data/',
                     help='location directory of the data corpus')
 parser.add_argument('--threshold', type=int, default=5,
                     help='threshold count of the word')
-parser.add_argument('--epoch', type=int, default=3,
+parser.add_argument('--epoch', type=int, default=5,
                     help='training epochs')
 parser.add_argument('--emsize', type=int, default=128,
                     help='size of word embeddings')

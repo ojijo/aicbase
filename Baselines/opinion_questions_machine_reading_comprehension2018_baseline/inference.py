@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import argparse
-import cPickle
+# import cPickle
+import _pickle as cPickle
 import codecs
 
 import torch
@@ -48,21 +49,30 @@ def inference():
     predictions = []
     with torch.no_grad():
         for i in range(0, len(data), args.batch_size):
-            one = data[i:i + args.batch_size]
-            query, _ = padding([x[0] for x in one], max_len=50)
-            passage, _ = padding([x[1] for x in one], max_len=300)
-            answer = pad_answer([x[2] for x in one])
-            str_words = [x[-1] for x in one]
-            ids = [x[3] for x in one]
-            query, passage, answer = torch.LongTensor(query), torch.LongTensor(passage), torch.LongTensor(answer)
-            if args.cuda:
-                query = query.cuda()
-                passage = passage.cuda()
-                answer = answer.cuda()
-            output = model([query, passage, answer, False])
-            for q_id, prediction, candidates in zip(ids, output, str_words):
-                prediction_answer = u''.join(candidates[prediction])
-                predictions.append(str(q_id) + '\t' + prediction_answer)
+#         for i in range(0, len(data), 3):
+            try:
+                one = data[i:i + args.batch_size]
+    #             print(one)
+                query, _ = padding([x[0] for x in one], max_len=50)
+                passage, _ = padding([x[1] for x in one], max_len=300)
+                answer = pad_answer([x[2] for x in one])
+                str_words = [x[-1] for x in one]
+                ids = [x[3] for x in one]
+                query, passage, answer = torch.LongTensor(query), torch.LongTensor(passage), torch.LongTensor(answer)
+                if args.cuda:
+                    query = query.cuda()
+                    passage = passage.cuda()
+                    answer = answer.cuda()
+                output = model([query, passage, answer, False])
+                for q_id, prediction, candidates in zip(ids, output, str_words):
+                    prediction_answer = u''.join(candidates[prediction])
+                    predictions.append(str(q_id) + '\t' + prediction_answer)
+    #             print(i)
+            except Exception as e:
+                print(e)
+                print(i)
+                print(one)   
+                
     outputs = u'\n'.join(predictions)
     with codecs.open(args.output, 'w',encoding='utf-8') as f:
         f.write(outputs)
