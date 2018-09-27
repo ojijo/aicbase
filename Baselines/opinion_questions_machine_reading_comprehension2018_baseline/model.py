@@ -68,9 +68,12 @@ class MwAN(nn.Module):
         hp, _ = self.p_encoder(q_embedding)
         hp=F.dropout(hp,self.drop_out)
 
+
         _s1 = self.Wc1(hq).unsqueeze(1)
         _s2 = self.Wc2(hp).unsqueeze(2)
-        sjt = self.vc(torch.tanh(_s1 + _s2)).squeeze()
+        sjt = torch.tanh(_s1 + _s2)
+        sjt = self.vc(sjt)
+        sjt = sjt.squeeze()
         ait = F.softmax(sjt, 2)
         qtc = ait.bmm(hq)
         
@@ -79,19 +82,31 @@ class MwAN(nn.Module):
         ait = F.softmax(sjt, 2)
         qtb = ait.bmm(hq)
         
+        #
         _s1 = hq.unsqueeze(1)
         _s2 = hp.unsqueeze(2)
-        sjt = self.vd(torch.tanh(self.Wd(_s1 * _s2))).squeeze()
+        sjt = self.Wd(_s1 * _s2)
+        sjt = torch.tanh(sjt)
+        sjt = self.vd(sjt)
+        sjt = sjt.squeeze()
         ait = F.softmax(sjt, 2)
         qtd = ait.bmm(hq)
         
-        sjt = self.vm(torch.tanh(self.Wm(_s1 - _s2))).squeeze()
+        #
+        sjt = self.Wm(_s1 - _s2)
+        sjt = torch.tanh(sjt)
+        sjt = self.vm(sjt)        
+        sjt = sjt .squeeze()
         ait = F.softmax(sjt, 2)
         qtm = ait.bmm(hq)
         
+        #
         _s1 = hp.unsqueeze(1)
         _s2 = hp.unsqueeze(2)
-        sjt = self.vs(torch.tanh(self.Ws(_s1 * _s2))).squeeze()
+        sjt = self.Ws(_s1 * _s2)
+        sjt = torch.tanh(sjt)
+        sjt = self.vs(sjt)
+        sjt = sjt.squeeze()
         ait = F.softmax(sjt, 2)
         qts = ait.bmm(hp)
         
