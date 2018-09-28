@@ -12,13 +12,13 @@ from preprocess import seg_data, transform_data_to_id
 parser = argparse.ArgumentParser(description='inference procedure, note you should train the data at first')
 
 parser.add_argument('--data', type=str,
-                    default='data/ai_challenger_oqmrc_testa_20180816/ai_challenger_oqmrc_testa.json',
+                    default='../data/ai_challenger_oqmrc_testa_20180816/ai_challenger_oqmrc_testa.json',
                     help='location of the test data')
 
-parser.add_argument('--word_path', type=str, default='data/word2id.obj',
+parser.add_argument('--word_path', type=str, default='../data/word2id.obj',
                     help='location of the word2id.obj')
 
-parser.add_argument('--output', type=str, default='data/prediction.a.txt',
+parser.add_argument('--output', type=str, default='../data/prediction.a.txt',
                     help='prediction path')
 parser.add_argument('--model', type=str, default='model.pt',
                     help='model path')
