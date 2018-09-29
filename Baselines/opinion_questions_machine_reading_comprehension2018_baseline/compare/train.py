@@ -27,7 +27,7 @@ parser.add_argument('--log_interval', type=int, default=300,
                     help='# of batches to see the training error')
 parser.add_argument('--dropout', type=float, default=0.2,
                     help='dropout applied to layers (0 = no dropout)')
-parser.add_argument('--cuda', action='store_true', default=True,
+parser.add_argument('--cuda', action='store_true', default=False,
                     help='use CUDA')
 parser.add_argument('--save', type=str, default='model.pt',
                     help='path to save the final model')

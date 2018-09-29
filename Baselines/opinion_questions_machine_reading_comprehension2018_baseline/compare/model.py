@@ -53,22 +53,30 @@ class MwAN(nn.Module):
 
     def forward(self, inputs):
         [query, passage, answer, is_train] = inputs
+        #Step 0 - 词向量
         q_embedding = self.embedding(query)
         p_embedding = self.embedding(passage)
         a_embeddings = self.embedding(answer)
-        a_embedding, _ = self.a_encoder(a_embeddings.view(-1, a_embeddings.size(2), a_embeddings.size(3)))
-        a_score = F.softmax(self.a_attention(a_embedding), 1)
-        a_output = a_score.transpose(2, 1)
+        
+        #答案的计算
+        #a_embeddings = a_embeddings.view(-1, a_embeddings.size(2), a_embeddings.size(3)) #合并前2维
+        a_embedding, _ = self.a_encoder(a_embeddings.view(-1, a_embeddings.size(2), a_embeddings.size(3))) #加入上下文的词向量
+        
+        a_score = self.a_attention(a_embedding) #计算自身注意力向量
+        a_score = F.softmax(a_score, 1)
+        
+        a_output = a_score.transpose(2, 1) #使用自身注意力
         a_output = a_output.bmm(a_embedding)
         a_output = a_output.squeeze()
         a_embedding = a_output.view(a_embeddings.size(0), 3, -1)
         
+        #Step 1  - RNN上下文 hidden state       #p,q倒过来cuda报oom 
         hq, _ = self.q_encoder(p_embedding)
         hq=F.dropout(hq,self.drop_out)
         hp, _ = self.p_encoder(q_embedding)
         hp=F.dropout(hp,self.drop_out)
 
-
+        #Step 2 - 4种注意力
         _s1 = self.Wc1(hq).unsqueeze(1)
         _s2 = self.Wc2(hp).unsqueeze(2)
         sjt = torch.tanh(_s1 + _s2)
@@ -96,7 +104,7 @@ class MwAN(nn.Module):
         sjt = self.Wm(_s1 - _s2)
         sjt = torch.tanh(sjt)
         sjt = self.vm(sjt)        
-        sjt = sjt .squeeze()
+        sjt = sjt.squeeze()
         ait = F.softmax(sjt, 2)
         qtm = ait.bmm(hq)
         
@@ -110,12 +118,26 @@ class MwAN(nn.Module):
         ait = F.softmax(sjt, 2)
         qts = ait.bmm(hp)
         
+        # step 3 - 分两步汇总
+        # step 3.1 先用RNN汇聚
         aggregation = torch.cat([hp, qts, qtc, qtd, qtb, qtm], 2)
         aggregation_representation, _ = self.gru_agg(aggregation)
-        sj = self.vq(torch.tanh(self.Wq(hq))).transpose(2, 1)
-        rq = F.softmax(sj, 2).bmm(hq)
-        sj = F.softmax(self.vp(self.Wp1(aggregation_representation) + self.Wp2(rq)).transpose(2, 1), 2)
+        
+        # step 3.2 再用attention
+        sj = self.Wq(hq)
+        sj = torch.tanh(sj)
+        sj = self.vq(sj)
+        sj = sj.transpose(2, 1)
+        sj = F.softmax(sj, 2)
+        rq = sj.bmm(hq)
+        
+        sj = self.Wp1(aggregation_representation) + self.Wp2(rq)
+        sj = self.vp(sj)
+        sj = sj.transpose(2, 1)
+        sj = F.softmax(sj, 2)
         rp = sj.bmm(aggregation_representation)
+        
+        
         encoder_output = F.dropout(F.leaky_relu(self.prediction(rp)),self.drop_out)
         score = F.softmax(a_embedding.bmm(encoder_output.transpose(2, 1)).squeeze(), 1)
         if not is_train:
