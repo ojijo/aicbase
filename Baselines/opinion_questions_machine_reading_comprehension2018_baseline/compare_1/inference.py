@@ -43,10 +43,13 @@ data = [x + [y[2]] for x, y in zip(transformed_data, raw_data)]
 data = sorted(data, key=lambda x: len(x[1]))
 print( 'test data size {:d}'.format(len(data)))
 
-
 def inference():
     model.eval()
     predictions = []
+    
+    notSureCountMax = 0
+    notSureCountFind = 0
+    
     with torch.no_grad():
         for i in range(0, len(data), args.batch_size):
 #         for i in range(0, len(data), 3):
@@ -65,8 +68,18 @@ def inference():
                     answer = answer.cuda()
                 output = model([query, passage, answer, False])
                 for q_id, prediction, candidates in zip(ids, output, str_words):
-                    prediction_answer = u''.join(candidates[prediction])
+                    posMax=prediction.argmax().item()
+                    if candidates[posMax]== u'无法确定':
+                        notSureCountMax += 1
+                    for j in range(0,len(candidates)):
+                        if candidates[j]== u'无法确定':
+                            if prediction[j] > 0.21:
+                                posMax=j
+                                notSureCountFind+=1  
+                                break
+                    prediction_answer = u''.join(candidates[posMax])                    
                     predictions.append(str(q_id) + '\t' + prediction_answer)
+                
     #             print(i)
             except Exception as e:
                 print(e)
@@ -77,6 +90,8 @@ def inference():
     with codecs.open(args.output, 'w',encoding='utf-8') as f:
         f.write(outputs)
     print( 'done!')
+    print(notSureCountMax)
+    print(notSureCountFind)
 
 
 if __name__ == '__main__':
