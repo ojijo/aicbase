@@ -4,7 +4,7 @@ import argparse
 import _pickle as cPickle
 import torch
 
-from model import MwAN
+from model_NS import MwAN
 # from preprocess import process_data
 from utils import *
 
@@ -21,7 +21,7 @@ parser.add_argument('--emsize', type=int, default=128,
                     help='size of word embeddings')
 parser.add_argument('--nhid', type=int, default=128,
                     help='hidden size of the model')
-parser.add_argument('--batch_size', type=int, default=16, metavar='N',
+parser.add_argument('--batch_size', type=int, default=32, metavar='N',
                     help='batch size')
 parser.add_argument('--log_interval', type=int, default=300,
                     help='# of batches to see the training error')
@@ -29,7 +29,7 @@ parser.add_argument('--dropout', type=float, default=0.2,
                     help='dropout applied to layers (0 = no dropout)')
 parser.add_argument('--cuda', action='store_true', default=True,
                     help='use CUDA')
-parser.add_argument('--save', type=str, default='model.pt',
+parser.add_argument('--save', type=str, default='model_NS.pt',
                     help='path to save the final model')
 
 parser.add_argument('--word_path', type=str, default='data/word2id.obj',
@@ -47,13 +47,33 @@ if args.cuda:
     model.cuda()
 optimizer = torch.optim.Adamax(model.parameters())
 
-with open(args.data + 'train.pickle', 'rb') as f:
+with open(args.data + 'trainNS.pickle', 'rb') as f:
     train_data = cPickle.load(f)
-with open(args.data + 'dev.pickle', 'rb') as f:
+with open(args.data + 'devNS.pickle', 'rb') as f:
     dev_data = cPickle.load(f)
 dev_data = sorted(dev_data, key=lambda x: len(x[1]))
 
 print('train data size {:d}, dev data size {:d}'.format(len(train_data), len(dev_data)))
+
+
+notSureCode = 0
+
+with open(args.word_path, 'rb') as f:
+    word2id = cPickle.load(f)
+
+    def map_word_to_id(word):
+        output = []
+        if word in word2id:
+            output.append(word2id[word])
+        else:
+            chars = list(word)
+            for char in chars:
+                if char in word2id:
+                    output.append(word2id[char])
+                else:
+                    output.append(1)
+        return output
+    notSureCode = map_word_to_id('无法确定')[0]
 
 def train(epoch):
     model.train()
@@ -82,7 +102,11 @@ def train(epoch):
 
 
 def test():
-
+    countYesNoAnswer =0    
+    countNotSureAnswer =0 
+    countYesNoMax = 0
+    countNotSureMax = 0
+    
     model.eval()
     r, a = 0.0, 0.0
     with torch.no_grad():
@@ -99,12 +123,26 @@ def test():
             output = model([query, passage, answer, False])
             for ind, one in enumerate(output):
                 posMax=one.argmax().item()
+                
+                if answer[ind][0][0]== notSureCode:  #如果对应答案是不确定
+                    countNotSureAnswer+=1
+                else :
+                    countYesNoAnswer += 1
+                
+                if posMax == 0:     #判断正确
+                    if answer[ind][posMax][0]== notSureCode: #答案是不确定
+                        countNotSureMax+=1
+                    else:
+                        countYesNoMax+=1
 #             r += torch.eq(output, 0).sum().item()
                 if posMax==0:
                     r += 1
 #             a +=len(one)
                 a += 1
-    
+    print("countYesNoAnswer " + str(countYesNoAnswer))                  
+    print("countYesNoMax " + str(countYesNoMax))   
+    print("countNotSureAnswer " + str(countNotSureAnswer))        
+    print("countNotSureMax " + str(countNotSureMax)) 
     return r * 100.0 / a
 
 
