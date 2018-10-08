@@ -42,7 +42,10 @@ class MwAN(nn.Module):
         self.Wp2 = nn.Linear(2 * encoder_size, encoder_size, bias=False)
         self.vp = nn.Linear(encoder_size, 1, bias=False)
         self.prediction = nn.Linear(2 * encoder_size, embedding_size, bias=False)
+        self.score = nn.Linear( encoder_size, 1, bias=False)
         self.initiation()
+        
+        self.loss = nn.MSELoss()
 
     def initiation(self):
         initrange = 0.1
@@ -56,19 +59,7 @@ class MwAN(nn.Module):
         #Step 0 - 词向量
         q_embedding = self.embedding(query)
         p_embedding = self.embedding(passage)
-        a_embeddings = self.embedding(answer)
-        
-        #答案的计算
-        #a_embeddings = a_embeddings.view(-1, a_embeddings.size(2), a_embeddings.size(3)) #合并前2维
-        a_embedding, _ = self.a_encoder(a_embeddings.view(-1, a_embeddings.size(2), a_embeddings.size(3))) #加入上下文的词向量
-        
-        a_score = self.a_attention(a_embedding) #计算自身注意力向量
-        a_score = F.softmax(a_score, 1)
-        
-        a_output = a_score.transpose(2, 1) #使用自身注意力
-        a_output = a_output.bmm(a_embedding)
-        a_output = a_output.squeeze()
-        a_embedding = a_output.view(a_embeddings.size(0), 3, -1)
+
         
         #Step 1  - RNN上下文 hidden state       #p,q倒过来cuda报oom 
         hq, _ = self.q_encoder(p_embedding)
@@ -139,12 +130,12 @@ class MwAN(nn.Module):
         
         
         encoder_output = F.dropout(F.leaky_relu(self.prediction(rp)),self.drop_out)
-        score = F.softmax(a_embedding.bmm(encoder_output.transpose(2, 1)).squeeze(), 1)
+        score = F.sigmoid(self.score(encoder_output.squeeze())).squeeze()
         if not is_train:
 #             return score.argmax(1)
             return score
 #         print(score[:, 0])
-        loss = -torch.log(score[:, 0]).mean()
-        return loss
+#         loss = -torch.log(1- (score-answer)^2).mean()
+        return self.loss(score,answer)
 
 

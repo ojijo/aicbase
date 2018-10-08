@@ -79,26 +79,27 @@ def train(epoch):
     model.train()
     data = shuffle_data(train_data, 1)
     total_loss = 0.0
-    for num, i in enumerate(range(0, len(data), args.batch_size)):
-        one = data[i:i + args.batch_size]
-        query, _ = padding([x[0] for x in one], max_len=50)
-        passage, _ = padding([x[1] for x in one], max_len=350)
-        answer = pad_answer([x[2] for x in one])
-        query, passage, answer = torch.LongTensor(query), torch.LongTensor(passage), torch.LongTensor(answer)
-        if args.cuda:
-            query = query.cuda()
-            passage = passage.cuda()
-            answer = answer.cuda()
-        optimizer.zero_grad()
-        loss = model([query, passage, answer, True])
-        loss.backward()
-        total_loss += loss.item()
-        optimizer.step()
-        if (num + 1) % args.log_interval == 0:
-            print( '|------epoch {:d} train error is {:f}  eclipse {:.2f}%------|'.format(epoch,
-                                                                                         total_loss / args.log_interval,
-                                                                                         i * 100.0 / len(data)))
-            total_loss = 0
+    for r in range(0,3):
+        for num, i in enumerate(range(0, len(data), args.batch_size)):
+            one = data[i:i + args.batch_size]
+            query, _ = padding([x[2][r] + x[0] for x in one], max_len=50)
+            passage, _ = padding([x[1] for x in one], max_len=350)
+            answer = [r==0 for x in one]
+            query, passage, answer = torch.LongTensor(query), torch.LongTensor(passage), torch.FloatTensor(answer)
+            if args.cuda:
+                query = query.cuda()
+                passage = passage.cuda()
+                answer = answer.cuda()
+            optimizer.zero_grad()
+            loss = model([query, passage, answer, True])
+            loss.backward()
+            total_loss += loss.item()
+            optimizer.step()
+            if (num + 1) % args.log_interval == 0:
+                print( '|------epoch {:d} train error is {:f}  eclipse {:.2f}%------|'.format(epoch,
+                                                                                             total_loss / args.log_interval,
+                                                                                             i * 100.0 / len(data)))
+                total_loss = 0
 
 
 def test():
