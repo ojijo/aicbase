@@ -124,17 +124,23 @@ def test():
             for ind, itm in enumerate(output):
                 posMax=itm.argmax().item()
                 
+                notSureItem = [0,[],"No"]
                 if answer[ind][0][0]== notSureCode:  #如果对应答案是不确定
                     countNotSureAnswer+=1
-                    notSureResult.append([ i*args.batch_size + ind,itm.data])
+                    notSureItem[0]=i + ind
+                    notSureItem[1] =[itm[0].item(),itm[1].item(),itm[2].item()]
                 else :
                     countYesNoAnswer += 1
                 
                 if posMax == 0:     #判断正确
                     if answer[ind][posMax][0]== notSureCode: #答案是不确定
                         countNotSureMax+=1
+                        notSureItem[2] ="Yes"
                     else:
                         countYesNoMax+=1
+                        
+                if (notSureItem[0]>0):
+                    notSureResult.append(notSureItem)
  
                 for j in range(0,len(itm)):
                     if answer[ind][j][0]== notSureCode:
@@ -170,7 +176,7 @@ def test():
     
     predictions = ""
     for itm in notSureResult:
-        predictions = predictions + str(itm[0]) + "," + str(itm[1][0])+ "," + str(itm[1][1])+ "," + str(itm[1][2]) + '\n'
+        predictions = predictions + str(itm[0]) + "," + str(itm[1][0])+ "," + str(itm[1][1])+ "," + str(itm[1][2]) + ","+ itm[2]+ "," + str(raw_data[itm[0]][0]) +"," + str(raw_data[itm[0]][1]) + '\n'
     with codecs.open("test_ouput.txt", 'w',encoding='utf-8') as f:
         f.write(predictions)
     
