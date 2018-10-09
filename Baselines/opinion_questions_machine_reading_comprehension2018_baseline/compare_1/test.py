@@ -7,6 +7,7 @@ import torch
 from model import MwAN
 from preprocess import process_data
 from utils import *
+import codecs
 
 parser = argparse.ArgumentParser(description='PyTorch implementation for Multiway Attention Networks for Modeling '
                                              'Sentence Pairs of the AI-Challenges')
@@ -104,6 +105,8 @@ def test():
     countNotSureLose = 0
     countNotSureTotalMod = 0
  
+    notSureResult = []
+    
     model.eval()
     r, a = 0.0, 0.0
     with torch.no_grad():
@@ -118,11 +121,12 @@ def test():
                 passage = passage.cuda()
                 answer = answer.cuda()
             output = model([query, passage, answer, False])
-            for ind, one in enumerate(output):
-                posMax=one.argmax().item()
+            for ind, itm in enumerate(output):
+                posMax=itm.argmax().item()
                 
                 if answer[ind][0][0]== notSureCode:  #如果对应答案是不确定
                     countNotSureAnswer+=1
+                    notSureResult.append([ i*args.batch_size + ind,itm.data])
                 else :
                     countYesNoAnswer += 1
                 
@@ -132,9 +136,9 @@ def test():
                     else:
                         countYesNoMax+=1
  
-                for j in range(0,len(one)):
+                for j in range(0,len(itm)):
                     if answer[ind][j][0]== notSureCode:
-                        if one[j] > 0.3:
+                        if itm[j] > 0.3:
                             countNotSureTotalMod += 1
                             #posMax=j
                             if j==0 and posMax!=0:
@@ -163,6 +167,13 @@ def test():
     modRate = (r + countNotSureWin - countNotSureLose)*100/a
     print("rate " + str(rate))
     print("modRate " + str(modRate) )
+    
+    predictions = ""
+    for itm in notSureResult:
+        predictions = predictions + str(itm[0]) + "," + str(itm[1][0])+ "," + str(itm[1][1])+ "," + str(itm[1][2]) + '\n'
+    with codecs.open("test_ouput.txt", 'w',encoding='utf-8') as f:
+        f.write(predictions)
+    
     return r * 100.0 / a
 
 
