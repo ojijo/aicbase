@@ -176,7 +176,7 @@ def test():
     
     predictions = ""
     for itm in notSureResult:
-        predictions = predictions + str(itm[0]) + "," + str(itm[1][0])+ "," + str(itm[1][1])+ "," + str(itm[1][2]) + ","+ itm[2]+ "," + str(raw_data[itm[0]][0]) +"," + str(raw_data[itm[0]][1]) + '\n'
+        predictions = predictions + str(itm[0]) + "," + str(itm[1][0])+ "," + str(itm[1][1])+ "," + str(itm[1][2]) + ","+ itm[2]+ "," + str(dev_data[itm[0]][3])  + '\n'
     with codecs.open("test_ouput.txt", 'w',encoding='utf-8') as f:
         f.write(predictions)
     
