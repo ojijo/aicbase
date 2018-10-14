@@ -18,7 +18,7 @@ parser.add_argument('--data', type=str,
 parser.add_argument('--word_path', type=str, default='../data/word2id.obj',
                     help='location of the word2id.obj')
 
-parser.add_argument('--output', type=str, default='prediction.a.txt',
+parser.add_argument('--output', type=str, default='../data/prediction.a.txt',
                     help='prediction path')
 parser.add_argument('--model', type=str, default='model.pt',
                     help='model path')

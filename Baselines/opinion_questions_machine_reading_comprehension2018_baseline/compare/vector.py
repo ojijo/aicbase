@@ -23,6 +23,7 @@ def read_vectors(path, topn):  # read top n word vectors, i.e. top is 10000
     wi = {}
     with open(path, encoding='utf-8', errors='ignore') as f:
         first_line = True
+        #为提高效率先按词库文件遍历一边
         for line in f:
             if first_line:
                 first_line = False
@@ -34,7 +35,8 @@ def read_vectors(path, topn):  # read top n word vectors, i.e. top is 10000
                 rowNum = word2id[tokens[0]]
                 vectors[rowNum] = np.asarray([float(x) for x in tokens[1:]])
             else:
-                print(tokens[0])
+                #词库里未能使用到的词向量
+#                 print(tokens[0])
                 continue
                 
             lines_num += 1
@@ -42,13 +44,19 @@ def read_vectors(path, topn):  # read top n word vectors, i.e. top is 10000
             iw.append(tokens[0])
             if topn != 0 and lines_num >= topn:
                 break
+            
+        print("****************")    
+        print("找到 " + str(lines_num) + " 个匹配的词")
+        print("****************")
     
+    #    
     countNone = 0
     for i in range(0, topn):
 #         print(type(vectors[i]))
         if type(vectors[i])== None.__class__ :
-            v = np.asarray([float(0) for x in range(0,dim)])
-            print
+#             print( vectors[i])
+            vectors[i] = np.asarray([float(0) for x in range(0,dim)])
+#             vectors[i] = np.random.uniform(-0.1, 0.1, dim).round(6).tolist()
             countNone+=1        
     print(countNone)
     
@@ -61,6 +69,7 @@ def read_vectors(path, topn):  # read top n word vectors, i.e. top is 10000
 def main():
     vectors_path = "/home/dl-ubuntu/Downloads/sgns.baidubaike.bigram-char"
     vocab_size = 96973  
+#     vocab_size = 3  
     results = {}  # Records the results
 
     vectors, iw, wi, dim = read_vectors(vectors_path, vocab_size)  # Read top n word vectors. Read all vectors when topn is 0

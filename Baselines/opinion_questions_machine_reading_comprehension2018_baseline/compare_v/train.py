@@ -15,7 +15,7 @@ parser.add_argument('--data', type=str, default='../data/',
                     help='location directory of the data corpus')
 parser.add_argument('--threshold', type=int, default=5,
                     help='threshold count of the word')
-parser.add_argument('--epoch', type=int, default=5,
+parser.add_argument('--epoch', type=int, default=2,
                     help='training epochs')
 parser.add_argument('--emsize', type=int, default=300,
                     help='size of word embeddings')
@@ -35,7 +35,14 @@ parser.add_argument('--save', type=str, default='model.pt',
 args = parser.parse_args()
 
 # vocab_size = process_data(args.data, args.threshold)
-vocab_size = 96972
+vocab_size = 98745
+
+model = MwAN(vocab_size=vocab_size, embedding_size=args.emsize, encoder_size=args.nhid, drop_out=args.dropout)
+print('Model total parameters:', get_model_parameters(model))
+print(model)
+if args.cuda:
+    model.cuda()
+optimizer = torch.optim.Adamax(model.parameters())
 
 with open(args.data + 'train.pickle', 'rb') as f:
     train_data = cPickle.load(f)
@@ -43,19 +50,7 @@ with open(args.data + 'dev.pickle', 'rb') as f:
     dev_data = cPickle.load(f)
 dev_data = sorted(dev_data, key=lambda x: len(x[1]))
 
-print('train data size {:d}, dev data size {:d}'.format(len(train_data), len(dev_data)))        
-
-with open('../data/embedding.obj', 'rb') as f:
-    pretrained_weight = cPickle.load(f)
-
-model = MwAN(vocab_size=vocab_size, embedding_size=args.emsize, encoder_size=args.nhid, drop_out=args.dropout,pretrained_weight=pretrained_weight)
-print('Model total parameters:', get_model_parameters(model))
-print(model)
-if args.cuda:
-    model.cuda()
-optimizer = torch.optim.Adamax(model.parameters())
-
-
+print('train data size {:d}, dev data size {:d}'.format(len(train_data), len(dev_data)))
 
 
 def train(epoch):

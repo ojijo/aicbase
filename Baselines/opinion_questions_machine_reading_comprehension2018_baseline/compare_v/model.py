@@ -3,16 +3,12 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-import _pickle as cPickle
 
 class MwAN(nn.Module):
-    def __init__(self, vocab_size, embedding_size, encoder_size, pretrained_weight,drop_out=0.2):
+    def __init__(self, vocab_size, embedding_size, encoder_size, drop_out=0.2):
         super(MwAN, self).__init__()
         self.drop_out=drop_out
         self.embedding = nn.Embedding(vocab_size + 1, embedding_dim=embedding_size)
-
-        self.embedding.weight.data.copy_(torch.from_numpy(pretrained_weight))
-                    
         self.q_encoder = nn.GRU(input_size=embedding_size, hidden_size=encoder_size, batch_first=True,
                                 bidirectional=True)
         self.p_encoder = nn.GRU(input_size=embedding_size, hidden_size=encoder_size, batch_first=True,
