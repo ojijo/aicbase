@@ -6,7 +6,7 @@ import argparse
 import _pickle as cPickle
 parser = argparse.ArgumentParser(description='inference procedure, note you should train the data at first')
 
-parser.add_argument('--word_path', type=str, default='../data/word2id.obj',
+parser.add_argument('--word_path', type=str, default='data/word2id.obj',
                     help='location of the word2id.obj')
 
 args = parser.parse_args()
@@ -67,7 +67,7 @@ def read_vectors(path, topn):  # read top n word vectors, i.e. top is 10000
 
 
 def main():
-    vectors_path = "/home/dl-ubuntu/Downloads/sgns.baidubaike.bigram-char"
+    vectors_path = "/home/deployer/Downloads/sgns.baidubaike.bigram-char"
     vocab_size = 96973  
 #     vocab_size = 3  
     results = {}  # Records the results
@@ -77,7 +77,7 @@ def main():
     word_embeds = nn.Embedding(vocab_size, 300)
     pretrained_weight = np.array(vectors)
     word_embeds.weight.data.copy_(torch.from_numpy(pretrained_weight))
-    with open('../data/embedding.obj', 'wb') as f:
+    with open('data/embedding.obj', 'wb') as f:
         cPickle.dump(pretrained_weight, f)
 
 
