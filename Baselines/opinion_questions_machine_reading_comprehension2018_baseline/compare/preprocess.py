@@ -96,7 +96,7 @@ def process_data(data_path, threshold):
 #     path_lst = [train_file_path, dev_file_path, test_a_file_path, test_b_file_path]
     path_lst = [train_file_path, dev_file_path, test_a_file_path]
 #     output_path = [data_path + x for x in ['train.pickle','dev.pickle', 'testa.pickle', 'testb.pickle']]
-    output_path = [data_path + x for x in ['train.pickle','dev.pickle', 'testa.pickle']]
+    output_path = ["data/" + x for x in ['train.pickle','dev.pickle', 'testa.pickle']]
     return _process_data(path_lst, threshold, output_path)
 
 
@@ -105,10 +105,10 @@ def _process_data(path_lst, word_min_count=5, output_file_path=[]):
     for path in path_lst:
         raw_data.append(seg_data(path))
     word_count = build_word_count([y for x in raw_data for y in x])
-    with open('../data/word-count.obj', 'wb') as f:
+    with open('data/word-count.obj', 'wb') as f:
         cPickle.dump(word_count, f)
     word2id = build_word2id(word_count, word_min_count)
-    with open('../data/word2id.obj', 'wb') as f:
+    with open('data/word2id.obj', 'wb') as f:
         cPickle.dump(word2id, f)
     for one_raw_data, one_output_file_path in zip(raw_data, output_file_path):
         with open(one_output_file_path, 'wb') as f:

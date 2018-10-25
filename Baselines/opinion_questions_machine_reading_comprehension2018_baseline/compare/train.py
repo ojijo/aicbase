@@ -11,7 +11,7 @@ from utils import *
 parser = argparse.ArgumentParser(description='PyTorch implementation for Multiway Attention Networks for Modeling '
                                              'Sentence Pairs of the AI-Challenges')
 
-parser.add_argument('--data', type=str, default='../data/',
+parser.add_argument('--data', type=str, default='data/',
                     help='location directory of the data corpus')
 parser.add_argument('--threshold', type=int, default=5,
                     help='threshold count of the word')
@@ -45,7 +45,7 @@ dev_data = sorted(dev_data, key=lambda x: len(x[1]))
 
 print('train data size {:d}, dev data size {:d}'.format(len(train_data), len(dev_data)))        
 
-with open('../data/embedding.obj', 'rb') as f:
+with open('data/embedding.obj', 'rb') as f:
     pretrained_weight = cPickle.load(f)
 
 model = MwAN(vocab_size=vocab_size, embedding_size=args.emsize, encoder_size=args.nhid, drop_out=args.dropout,pretrained_weight=pretrained_weight)
