@@ -6,8 +6,8 @@ import numpy as np
 import logging
 
 from torch.autograd import Variable
-from .utils import AverageMeter
-from .FusionNet import FusionNet
+from utils import AverageMeter
+from FusionNet import FusionNet
 
 logger = logging.getLogger(__name__)
 

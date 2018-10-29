@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from . import layers
+import layers
 
 class FusionNet(nn.Module):
     """Network for the FusionNet Module."""
@@ -125,33 +125,36 @@ class FusionNet(nn.Module):
         Prnn_input_list.append(x1_emb)
         Hrnn_input_list.append(x2_emb)
 
-        # Contextualized embeddings
-        _, x1_cove = self.CoVe(x1, x1_mask)
-        _, x2_cove = self.CoVe(x2, x2_mask)
-        if self.opt['dropout_emb'] > 0:
-            x1_cove = layers.dropout(x1_cove, p=self.opt['dropout_emb'], training=self.training)
-            x2_cove = layers.dropout(x2_cove, p=self.opt['dropout_emb'], training=self.training)
-        Prnn_input_list.append(x1_cove)
-        Hrnn_input_list.append(x2_cove)
-
-        # POS embeddings
-        x1_pos_emb = self.pos_embedding(x1_pos)
-        x2_pos_emb = self.pos_embedding(x2_pos)
-        Prnn_input_list.append(x1_pos_emb)
-        Hrnn_input_list.append(x2_pos_emb)
-
-        # NER embeddings
-        x1_ner_emb = self.ner_embedding(x1_ner)
-        x2_ner_emb = self.ner_embedding(x2_ner)
-        Prnn_input_list.append(x1_ner_emb)
-        Hrnn_input_list.append(x2_ner_emb)
-
-        x1_input = torch.cat(Prnn_input_list, 2)
-        x2_input = torch.cat(Hrnn_input_list, 2)
+#         # Contextualized embeddings
+#         _, x1_cove = self.CoVe(x1, x1_mask)
+#         _, x2_cove = self.CoVe(x2, x2_mask)
+#         if self.opt['dropout_emb'] > 0:
+#             x1_cove = layers.dropout(x1_cove, p=self.opt['dropout_emb'], training=self.training)
+#             x2_cove = layers.dropout(x2_cove, p=self.opt['dropout_emb'], training=self.training)
+#         Prnn_input_list.append(x1_cove)
+#         Hrnn_input_list.append(x2_cove)
+# 
+#         # POS embeddings
+#         x1_pos_emb = self.pos_embedding(x1_pos)
+#         x2_pos_emb = self.pos_embedding(x2_pos)
+#         Prnn_input_list.append(x1_pos_emb)
+#         Hrnn_input_list.append(x2_pos_emb)
+# 
+#         # NER embeddings
+#         x1_ner_emb = self.ner_embedding(x1_ner)
+#         x2_ner_emb = self.ner_embedding(x2_ner)
+#         Prnn_input_list.append(x1_ner_emb)
+#         Hrnn_input_list.append(x2_ner_emb)
+# 
+#         x1_input = torch.cat(Prnn_input_list, 2)
+#         x2_input = torch.cat(Hrnn_input_list, 2)
 
         # Now the features are ready
         # x1_input: [batch_size, doc_len, input_size]
         # x2_input: [batch_size, doc_len, input_size]
+
+        x1_input = x1_emb
+        x2_input = x2_emb
 
         if self.opt['full_att_type'] == 2:
             x1_f = layers.dropout(x1_f, p=self.opt['dropout_EM'], training=self.training)
