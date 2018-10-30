@@ -69,7 +69,12 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)   
 log.info('[program starts.]')
 opt = vars(args) # changing opt will change args
-model = FusionNet_Model(opt, pretrained_weight)
+
+opt['vocab_size'] = 96972
+opt['embedding_dim'] = 128
+opt['num_features'] = 0
+embedding = torch.Tensor(pretrained_weight)
+model = FusionNet_Model(opt, embedding)
 # model = MwAN(vocab_size=vocab_size, embedding_size=args.emsize, encoder_size=args.nhid, drop_out=args.dropout,pretrained_weight=pretrained_weight)
 print('Model total parameters:', get_model_parameters(model))
 print(model)
