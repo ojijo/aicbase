@@ -33,15 +33,15 @@ class FusionNet(nn.Module):
                 self.fixed_embedding = fixed_embedding
         embedding_dim = opt['embedding_dim']
         input_size += embedding_dim
-        # Contextualized embeddings
-        self.CoVe = layers.MTLSTM(opt, embedding)
-        input_size += self.CoVe.output_size
-        # POS embeddings
-        self.pos_embedding = nn.Embedding(opt['pos_size'], opt['pos_dim'])
-        input_size += opt['pos_dim']
-        # NER embeddings
-        self.ner_embedding = nn.Embedding(opt['ner_size'], opt['ner_dim'])
-        input_size += opt['ner_dim']
+#         # Contextualized embeddings
+#         self.CoVe = layers.MTLSTM(opt, embedding)
+#         input_size += self.CoVe.output_size
+#         # POS embeddings
+#         self.pos_embedding = nn.Embedding(opt['pos_size'], opt['pos_dim'])
+#         input_size += opt['pos_dim']
+#         # NER embeddings
+#         self.ner_embedding = nn.Embedding(opt['ner_size'], opt['ner_dim'])
+#         input_size += opt['ner_dim']
 
         if opt['full_att_type'] == 2:
             aux_input = opt['num_features']

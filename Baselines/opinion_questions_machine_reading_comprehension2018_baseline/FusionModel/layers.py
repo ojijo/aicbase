@@ -85,16 +85,16 @@ class MTLSTM(nn.Module):
         if embedding is not None:
             self.embedding.weight.data = embedding
 
-        state_dict = torch.load(opt['MTLSTM_path'])
+#         state_dict = torch.load(opt['MTLSTM_path'])
         self.rnn1 = nn.LSTM(300, 300, num_layers=1, bidirectional=True)
         self.rnn2 = nn.LSTM(600, 300, num_layers=1, bidirectional=True)
 
-        state_dict1 = dict([(name, param.data) if isinstance(param, Parameter) else (name, param)
-                        for name, param in state_dict.items() if '0' in name])
-        state_dict2 = dict([(name.replace('1', '0'), param.data) if isinstance(param, Parameter) else (name.replace('1', '0'), param)
-                        for name, param in state_dict.items() if '1' in name])
-        self.rnn1.load_state_dict(state_dict1)
-        self.rnn2.load_state_dict(state_dict2)
+#         state_dict1 = dict([(name, param.data) if isinstance(param, Parameter) else (name, param)
+#                         for name, param in state_dict.items() if '0' in name])
+#         state_dict2 = dict([(name.replace('1', '0'), param.data) if isinstance(param, Parameter) else (name.replace('1', '0'), param)
+#                         for name, param in state_dict.items() if '1' in name])
+#         self.rnn1.load_state_dict(state_dict1)
+#         self.rnn2.load_state_dict(state_dict2)
 
         for p in self.embedding.parameters():
             p.requires_grad = False

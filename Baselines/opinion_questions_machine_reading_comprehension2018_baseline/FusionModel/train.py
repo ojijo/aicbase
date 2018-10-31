@@ -10,7 +10,7 @@ from utils import *
 
 import logging
 from model import FusionNet_Model
-
+from datetime import datetime
 
 
 parser = argparse.ArgumentParser(description='Fusion net')
@@ -29,6 +29,33 @@ parser.add_argument('--data', type=str, default='../data/',
 #词典大小
 parser.add_argument('--vocab_size', type=int, default=96972,
                     help='size of the word')
+
+parser.add_argument('--fix_embeddings',default=True, action='store_true',
+                    help='if true, `tune_partial` will be ignored.')
+parser.add_argument('-tp', '--tune_partial', type=int, default=1000,
+                    help='finetune top-x embeddings (including <PAD>, <UNK>).')
+
+parser.add_argument('--full_att_type', type=int, default=2)
+
+parser.add_argument('--hidden_size', type=int, default=125)
+parser.add_argument('--enc_rnn_layers', type=int, default=2, help="Encoding RNN layers")
+parser.add_argument('--inf_rnn_layers', type=int, default=2, help="Inference RNN layers")
+parser.add_argument('--final_merge', default='linear_self_attn')
+
+parser.add_argument('--number_of_class', type=int, default=3)
+parser.add_argument('-op', '--optimizer', default='adamax',
+                    help='supported optimizer: adamax, sgd, adadelta, adam')
+
+parser.add_argument('--cuda', type=bool, default=torch.cuda.is_available(),
+                    help='whether to use GPU acceleration.')
+
+parser.add_argument('--batch_size', type=int, default=32, metavar='N',
+                    help='batch size')
+parser.add_argument('--log_interval', type=int, default=300,
+                    help='# of batches to see the training error')
+parser.add_argument('--epoch', type=int, default=20)
+
+
 # parser.add_argument('--threshold', type=int, default=5,
 #                     help='threshold count of the word')
 # parser.add_argument('--epoch', type=int, default=5,
@@ -73,20 +100,21 @@ opt = vars(args) # changing opt will change args
 opt['vocab_size'] = 96972
 opt['embedding_dim'] = 128
 opt['num_features'] = 0
+
+
 embedding = torch.Tensor(pretrained_weight)
 model = FusionNet_Model(opt, embedding)
 # model = MwAN(vocab_size=vocab_size, embedding_size=args.emsize, encoder_size=args.nhid, drop_out=args.dropout,pretrained_weight=pretrained_weight)
-print('Model total parameters:', get_model_parameters(model))
+# print('Model total parameters:', get_model_parameters(model))
 print(model)
 if args.cuda:
     model.cuda()
-optimizer = torch.optim.Adamax(model.parameters())
-
-
-
+# optimizer = torch.optim.Adamax(model.parameters())
 
 def train(epoch):
-    model.train()
+    log.warning('Epoch {}'.format(epoch))
+
+    start = datetime.now()
     data = shuffle_data(train_data, 1)
     total_loss = 0.0
     for num, i in enumerate(range(0, len(data), args.batch_size)):
@@ -99,11 +127,14 @@ def train(epoch):
             query = query.cuda()
             passage = passage.cuda()
             answer = answer.cuda()
-        optimizer.zero_grad()
-        loss = model([query, passage, answer, True])
-        loss.backward()
-        total_loss += loss.item()
-        optimizer.step()
+            
+        batch = [query, passage, answer]
+        model.update(batch)
+        if i % args.log_per_updates == 0:
+            log.info('updates[{0:6}] train loss[{1:.5f}] remaining[{2}]'.format(
+                model.updates, model.train_loss.avg,
+                str((datetime.now() - start) / (i + 1) * (len(batches) - i - 1)).split('.')[0]))
+
         if (num + 1) % args.log_interval == 0:
             print( '|------epoch {:d} train error is {:f}  eclipse {:.2f}%------|'.format(epoch,
                                                                                          total_loss / args.log_interval,

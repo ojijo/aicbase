@@ -59,11 +59,11 @@ class FusionNet_Model(object):
 
         # Transfer to GPU
         if self.opt['cuda']:
-            inputs = [Variable(e.cuda(async=True)) for e in ex[:10]]
-            targets = Variable(ex[10].cuda(async=True))
+            inputs = [Variable(e.cuda(async=True)) for e in ex[:2]]
+            targets = Variable(ex[2].cuda(async=True))
         else:
-            inputs = [Variable(e) for e in ex[:10]]
-            targets = Variable(ex[10])
+            inputs = [Variable(e) for e in ex[:2]]
+            targets = Variable(ex[2])
 
         # Run forward
         scores = self.network(*inputs) # output: [batch_size, 3]
@@ -101,7 +101,7 @@ class FusionNet_Model(object):
         if self.opt['cuda']:
             # volatile means no gradient is needed
             inputs = [Variable(e.cuda(async=True), volatile=True)
-                      for e in ex[:10]]
+                      for e in ex[:2]]
         else:
             inputs = [Variable(e, volatile=True) for e in ex[:10]]
 
@@ -135,7 +135,7 @@ class FusionNet_Model(object):
             self.network.eval_embed.weight.data[0:offset] \
                 = self.network.embedding.weight.data[0:offset]
         else:
-            offset = 10
+            offset = 2
             self.network.eval_embed.weight.data[0:offset] \
                 = self.network.embedding.weight.data[0:offset]
 
