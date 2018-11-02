@@ -98,7 +98,8 @@ class FusionNet(nn.Module):
         # Store config
         self.opt = opt
 
-    def forward(self, x1, x1_f, x1_pos, x1_ner, x1_mask, x2, x2_f, x2_pos, x2_ner, x2_mask):
+#     def forward(self, x1, x1_f, x1_pos, x1_ner, x1_mask, x2, x2_f, x2_pos, x2_ner, x2_mask):
+    def forward(self, x1,  x2):
         """Inputs:
         x1 = premise word indices                [batch * len_1]
         x1_f = premise word features indices     [batch * len_1 * nfeat]
@@ -156,18 +157,19 @@ class FusionNet(nn.Module):
         x1_input = x1_emb
         x2_input = x2_emb
 
-        if self.opt['full_att_type'] == 2:
-            x1_f = layers.dropout(x1_f, p=self.opt['dropout_EM'], training=self.training)
-            x2_f = layers.dropout(x2_f, p=self.opt['dropout_EM'], training=self.training)
-            Paux_input, Haux_input = x1_f, x2_f
-        else:
-            Paux_input = x1_f[:, :, 0].contiguous().view(x1_f.size(0), x1_f.size(1), 1)
-            Haux_input = x2_f[:, :, 0].contiguous().view(x2_f.size(0), x2_f.size(1), 1)
+#         if self.opt['full_att_type'] == 2:
+#             x1_f = layers.dropout(x1_f, p=self.opt['dropout_EM'], training=self.training)
+#             x2_f = layers.dropout(x2_f, p=self.opt['dropout_EM'], training=self.training)
+#             Paux_input, Haux_input = x1_f, x2_f
+#         else:
+#             Paux_input = x1_f[:, :, 0].contiguous().view(x1_f.size(0), x1_f.size(1), 1)
+#             Haux_input = x2_f[:, :, 0].contiguous().view(x2_f.size(0), x2_f.size(1), 1)
+
 
         # Encode premise with RNN
-        P_abstr_ls = self.P_rnn(x1_input, x1_mask, aux_input=Paux_input)
+        P_abstr_ls = self.P_rnn(x1_input)
         # Encode hypothesis with RNN
-        H_abstr_ls = self.H_rnn(x2_input, x2_mask, aux_input=Haux_input)
+        H_abstr_ls = self.H_rnn(x2_input)
 
         # Fusion
         if self.opt['full_att_type'] == 0:

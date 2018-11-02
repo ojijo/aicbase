@@ -98,7 +98,7 @@ log.info('[program starts.]')
 opt = vars(args) # changing opt will change args
 
 opt['vocab_size'] = 96972
-opt['embedding_dim'] = 128
+opt['embedding_dim'] = 300
 opt['num_features'] = 0
 
 

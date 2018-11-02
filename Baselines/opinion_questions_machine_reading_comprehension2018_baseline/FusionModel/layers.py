@@ -48,7 +48,7 @@ class RNNEncoder(nn.Module):
             if i == 0: input_size_ += aux_size
             self.rnns.append(rnn_type(input_size_, hidden_size, num_layers=1, bidirectional=True))
 
-    def forward(self, x, x_mask, aux_input=None):
+    def forward(self, x, aux_input=None):
         # Transpose batch and sequence dims
         x = x.transpose(0, 1)
         if aux_input is not None:
