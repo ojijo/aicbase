@@ -60,10 +60,11 @@ class FusionNet_Model(object):
         # Transfer to GPU
         if self.opt['cuda']:
             inputs = [Variable(e.cuda(async=True)) for e in ex[:2]]
-            targets = Variable(ex[2].cuda(async=True))
+            targets = Variable(ex[2][:,0,0].cuda(async=True))
+            
         else:
             inputs = [Variable(e) for e in ex[:2]]
-            targets = Variable(ex[2])
+            targets = Variable(ex[2][:,0,0])
 
         # Run forward
         scores = self.network(*inputs) # output: [batch_size, 3]

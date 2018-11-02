@@ -187,22 +187,22 @@ class FusionNet(nn.Module):
             H_atts = torch.cat([x2_input] + H_abstr_ls, 2)
             P_xs = torch.cat(P_abstr_ls, 2)
             H_xs = torch.cat(H_abstr_ls, 2)
-        aP_xs = self.full_attn_P(P_atts, H_atts, P_xs, H_xs, x2_mask)
-        aH_xs = self.full_attn_H(H_atts, P_atts, H_xs, P_xs, x1_mask)
+        aP_xs = self.full_attn_P(P_atts, H_atts, P_xs, H_xs, None)
+        aH_xs = self.full_attn_H(H_atts, P_atts, H_xs, P_xs, None)
         P_hiddens = torch.cat([P_xs, aP_xs], 2)
         H_hiddens = torch.cat([H_xs, aH_xs], 2)
 
         # Inference on premise and hypothesis
-        P_hiddens = torch.cat(self.P_infer_rnn(P_hiddens, x1_mask), 2)
-        H_hiddens = torch.cat(self.H_infer_rnn(H_hiddens, x2_mask), 2)
+        P_hiddens = torch.cat(self.P_infer_rnn(P_hiddens, None), 2)
+        H_hiddens = torch.cat(self.H_infer_rnn(H_hiddens, None), 2)
 
         # Merge hiddens for answer classification
         if self.opt['final_merge'] == 'avg':
-            P_merge_weights = layers.uniform_weights(P_hiddens, x1_mask)
-            H_merge_weights = layers.uniform_weights(H_hiddens, x2_mask)
+            P_merge_weights = layers.uniform_weights(P_hiddens, None)
+            H_merge_weights = layers.uniform_weights(H_hiddens, None)
         elif self.opt['final_merge'] == 'linear_self_attn':
-            P_merge_weights = self.self_attn_P(P_hiddens, x1_mask)
-            H_merge_weights = self.self_attn_H(H_hiddens, x2_mask)
+            P_merge_weights = self.self_attn_P(P_hiddens, None)
+            H_merge_weights = self.self_attn_H(H_hiddens, None)
         P_avg_hidden = layers.weighted_avg(P_hiddens, P_merge_weights)
         H_avg_hidden = layers.weighted_avg(H_hiddens, H_merge_weights)
         P_max_hidden = torch.max(P_hiddens, 1)[0]

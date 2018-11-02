@@ -178,8 +178,8 @@ class FullAttention(nn.Module):
 
         scores = x1_rep.bmm(x2_rep.transpose(1, 2)).view(-1, self.num_level, x1.size(1), x2.size(1)) # batch * num_level * len1 * len2
 
-        x2_mask = x2_mask.unsqueeze(1).unsqueeze(2).expand_as(scores)
-        scores.data.masked_fill_(x2_mask.data, -float('inf'))
+#         x2_mask = x2_mask.unsqueeze(1).unsqueeze(2).expand_as(scores)
+#         scores.data.masked_fill_(x2_mask.data, -float('inf'))
 
         alpha_flat = F.softmax(scores.view(-1, x2.size(1)))
         alpha = alpha_flat.view(-1, x1.size(1), x2.size(1))
@@ -207,7 +207,7 @@ class LinearSelfAttn(nn.Module):
 
         x_flat = x.contiguous().view(-1, x.size(-1))
         scores = self.linear(x_flat).view(x.size(0), x.size(1))
-        scores.data.masked_fill_(x_mask.data, -float('inf'))
+#         scores.data.masked_fill_(x_mask.data, -float('inf'))
         alpha = F.softmax(scores)
         return alpha
 
@@ -241,7 +241,7 @@ def uniform_weights(x, x_mask): # used in lego_reader.py
     alpha = Variable(torch.ones(x.size(0), x.size(1)))
     if x.data.is_cuda:
         alpha = alpha.cuda()
-    alpha = alpha * x_mask.eq(0).float()
+#     alpha = alpha * x_mask.eq(0).float()
     alpha = alpha / alpha.sum(1).expand(alpha.size())
     return alpha
 
