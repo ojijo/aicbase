@@ -26,6 +26,7 @@ class FusionNet_Model(object):
 
         # Building network.
         self.network = FusionNet(opt, embedding)
+        print(self.network)
         if state_dict:
             new_state = set(self.network.state_dict().keys())
             for k in list(state_dict['network'].keys()):
@@ -69,6 +70,19 @@ class FusionNet_Model(object):
         # Run forward
         scores = self.network(*inputs) # output: [batch_size, 3]
 
+
+        a_embedding, _ = self.a_encoder(a_embeddings.view(-1, a_embeddings.size(2), a_embeddings.size(3)))
+        a_score = F.softmax(self.a_attention(a_embedding), 1)
+        a_output = a_score.transpose(2, 1)
+        a_output = a_output.bmm(a_embedding)
+        a_output = a_output.squeeze()
+        a_embedding = a_output.view(a_embeddings.size(0), 3, -1)
+        
+        score = F.softmax(a_embedding.bmm(encoder_output.transpose(2, 1)).squeeze(), 1)
+        if not is_train:
+            return score.argmax(1)
+        loss = -torch.log(score[:, 0]).mean()
+        
         # Compute loss and accuracies
         loss = F.cross_entropy(scores, targets)
         self.train_loss.update(loss.data[0], ex[0].size(0))

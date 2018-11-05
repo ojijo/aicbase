@@ -106,7 +106,7 @@ embedding = torch.Tensor(pretrained_weight)
 model = FusionNet_Model(opt, embedding)
 # model = MwAN(vocab_size=vocab_size, embedding_size=args.emsize, encoder_size=args.nhid, drop_out=args.dropout,pretrained_weight=pretrained_weight)
 # print('Model total parameters:', get_model_parameters(model))
-print(model)
+
 if args.cuda:
     model.cuda()
 # optimizer = torch.optim.Adamax(model.parameters())
